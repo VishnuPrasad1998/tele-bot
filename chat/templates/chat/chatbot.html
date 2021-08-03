@@ -1,0 +1,269 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="shortcut icon" href="{% static 'chat/favicon.ico' %}" type="image/x-icon">
+        <link rel="icon" href="{% static 'chat/favicon.ico' %}" type="image/x-icon">
+
+        <link rel="stylesheet" href="{% static 'chat/bootstrap/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'chat/css/chat.css' %}">
+
+        <link href="{% static 'chat/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <base target="_blank"/>
+        <title>Telebot v1</title>
+        <style>
+            .buttongrp {
+                margin-left: 40%;
+                margin-right: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Wrap all page content here -->
+
+        <div id="wrap" class="BotMainDiv" ng-controller="ChatCtrl">
+            <!-- Begin page content -->
+            <div class="container-fluid" id="body-container" style="border-bottom: #eee 1px solid;">
+
+                <div  id="sub-body-container">
+
+                    <div  id="messages-container">
+
+                    </div>
+                    <div class="error-notification alert alert-info" style="display:none;"></div>
+
+
+                </div>
+            </div>
+
+            <div class="navbar navbar-default navbar-fixed-bottom non-error">
+                <div class="container-fluid botAccentColor" id="bottom-box">
+                    <div class="buttongrp">
+                      <div class="btn-group" role="group" aria-label="Basic example">
+                      <button id="messageToSend" type="button" class="btn btn-primary" onclick="sendTextMessage()" value="fat">fat</button>
+                      <button id="messageToSendStupid" type="button" class="btn btn-success" onclick="sendTextMessageStupid()" value="stupid">stupid</button>
+                      <button id="messageToSendDumb" type="button" class="btn btn-danger" onclick="sendTextMessageDumb()" value="dumb">dumb</button>
+                      <a href="{% url 'logout' %}" type="button" style="padding-right: 0px; padding-left: 100px;">Logout</a>
+                    </div>
+                        <!-- <div id="messageToSend" contenteditable="true" class="pull-left" data-ph="Type your message..."></div> -->
+                        <!-- <button  id="messageToSend" type="button" onclick="sendTextMessage()" value="fat">
+                            fat
+                        </button>
+                        <br />
+                        <button  id="messageToSend" type="button" onclick="sendTextMessage()" value="stupid">
+                            stupid
+                        </button>
+                        <br />
+                        <button  id="messageToSend" type="button" onclick="sendTextMessage()" value="dumb">
+                            dumb
+                        </button> -->
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        
+        <script type="text/javascript">
+            
+            // Standard javascript code for csrf cookies
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            var csrftoken = getCookie('csrftoken');
+                // });
+
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+            function sameOrigin(url) {
+                // test that a given url is a same-origin URL
+                // url could be relative or scheme relative or absolute
+                var host = document.location.host; // host + port
+                var protocol = document.location.protocol;
+                var sr_origin = '//' + host;
+                var origin = protocol + sr_origin;
+                // Allow absolute or scheme relative URLs to same origin
+                return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                    (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                    // or any other URL that isn't scheme relative or absolute i.e relative.
+                    !(/^(\/\/|http:|https:).*/.test(url));
+            }
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                        // Send the token to same-origin, relative URLs only.
+                        // Send the token only if the method warrants CSRF protection
+                        // Using the CSRFToken value acquired earlier
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+            }
+        });
+
+        </script>
+
+        <script src="{% static 'chat/js/reconnecting-websocket.min.js' %}" type="text/javascript" charset="utf-8"></script>
+        <script src="{% static 'chat/js/internal-chatbox.js' %}" type="text/javascript" charset="utf-8">
+        </script>
+        
+        <script type="text/javascript">
+        
+            // START WEBSOCKETS
+            var supportsWebSockets = ('WebSocket' in window || 'MozWebSocket' in window) && WebSocket;
+            if(!supportsWebSockets){
+                $(".very-old-browser-notification").show();
+                $(".non-error").hide();
+            }else{
+                $(".very-old-browser-notification").hide();
+                $(".non-error").show();
+            }
+            var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+            var roomName="lobby";
+            // Calls the websocket connect channel
+            var chatsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host  + '/ws/chat/'  + roomName + '/');
+
+
+            $("#messageToSend").keypress(function (e) {
+                var key = e.which;
+                if (key == 13)  // trigger message send when 'enter' key is clicked
+                {
+                    $('#messageSendButton').trigger('click');
+                    return false;
+                }
+            });
+
+            // Code that is called when the socket is succesfully opened
+            chatsock.onopen = function(message) {
+                console.log("Socket open...");
+                var data = JSON.parse("{{context|escapejs}}");
+                var user_id = data['user_id']
+                $('.error-notification').hide();
+                $('.non-error').show();
+                $('#messages-container').html('<div  class="empty-div"></div>');
+                message = {}
+                message.command= 'start'
+                message.user_id = user_id
+                chatsock.send(JSON.stringify(message)); // START TALKING!
+            }
+            chatsock.onmessage = function(message){
+                processAndDisplayChatMessage(message);
+            };
+
+            chatsock.onclose = function(message){
+                console.log("connection lost ... ");
+            }
+
+            chatsock.onerror = function(message){
+                console.log("Error reconnecting ... ");
+                $('.error-notification').html("Unable to connect to the yomamabot server. Please try again in a few minutes (by refreshing the page). If the problem persists, please contact yomamabot (contact@yomamabot.com)).")
+                $('.error-notification').show();
+                $('.non-error').hide();
+                $("#body-container").scrollTop( $('#body-container')[0].scrollHeight );
+            }
+
+            $(document).ready(function() {
+                $("#body-container").scrollTop( $('#body-container')[0].scrollHeight );
+            });
+
+            // Function to simply format the text in the right way. May end up being more complicated when you have MCQs, etc.
+            function generate_formatted_chat_message(data){
+                if(data.type == 'text'){
+                    message_text = '<span class="message-text">' + data.text + '</span>'
+                    return message_text;
+                }
+                console.log(data, "invalid data format");
+                return "";
+            }
+
+            // Function that adds a message to the chat window
+            function add_message_to_chat(data, formatted_div){
+                var chat = $('#messages-container');
+                var new_source = data["source"];
+                if (new_source == "BOT"){
+                    chat.append('<div class="msg-row"><div class="col-xs-11 col-sm-11 col-md-11 col-lg-11 no-sides-padding msg-animate"><div class="bot-icon-div">Bot:</div><div class="panel message-panel bot-msg "><div class="panel-body bot-msg-body"><div><div class="message-text">'+formatted_div+'</div></div></div></div></div></div>');
+                }else if(new_source == "CANDIDATE"){
+
+                    var child = $('<div class="msg-row">');
+                    $(child).append('<div class="row"><div class="col-xs-10 col-sm-10 col-md-10 col-lg-10  pull-right no-sides-padding msg-animate"><div class="panel message-panel user-msg"><div class="panel-body user-msg-body"><div class="message-text"><span></span></div></div></div><div class="user-msg-bubble">you</div></div>');
+                    $(child).find('span').html(formatted_div);
+                    chat.append(child);
+                }
+                $("#body-container").scrollTop( $('#body-container')[0].scrollHeight);
+            }
+
+
+            // Function taht is called when the server sends a message via websockets to my front end.
+            function processAndDisplayChatMessage(message){
+                var content_data = JSON.parse(message.data);
+                var formatted_div = generate_formatted_chat_message(
+                    content_data);
+
+                if(formatted_div.length > 0){
+                    add_message_to_chat(content_data, formatted_div);
+                }
+            }
+
+
+            function sendTextMessage() {
+                if ($('#messageToSend').text() == "") {
+                    return
+                }
+
+                message = {}
+                message.text = $('#messageToSend').val();
+                message.command= 'send'
+                message.timestamp = new Date();
+                chatsock.send(JSON.stringify(message));
+            }
+
+            function sendTextMessageStupid() {
+                if ($('#messageToSendStupid').text() == "") {
+                        return
+                }
+
+                message = {}
+                message.text = $('#messageToSendStupid').val();
+                message.command= 'send'
+                message.timestamp = new Date();
+
+                chatsock.send(JSON.stringify(message));
+                }
+
+            function sendTextMessageDumb() {
+                if ($('#messageToSendDumb').val() == "") {
+                        return
+                }
+
+                message = {}
+                message.text = $('#messageToSendDumb').text();
+                message.command= 'send'
+                message.timestamp = new Date();
+
+                chatsock.send(JSON.stringify(message));
+
+            }
+        </script>
+</body>
+</html>

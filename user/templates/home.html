@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Telebot</title>
+    <style>
+       body{
+           background-color: black;
+           color: white;
+       } 
+    </style>
+</head>
+<body>
+    <div class="container">
+   <h1 style="text-align: center; margin-top: 10%;">
+     Welcome to Telebot v1  
+   </h1>
+   <div class="col" style="padding-left: 45%; padding-top: 20px;">
+       
+       <div class="row">
+        <button type="button" class="btn btn-primary"> <a href="{% url 'register' %}" style="color: white;">Register</a></button>
+       </div>
+       <br />
+       <div class="row">
+        <button type="button" class="btn btn-success"><a href="{% url 'login' %}" style="color: white;">Login</a></button>
+       </div>
+   </div>
+   
+   </button>
+    </div>
+        {% block content %}
+        <h3 class="text-center mb-3" style="margin-top: 20px; margin-left: -60px; color: red;">Hits List</h3>
+        <div class="container">
+        {% if button_hits %}
+
+            <table class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Fat_hits</th>
+                    <th scope="col">Dumb_hits</th>
+                    <th scope="col">Stupid_hits</th>
+                </tr>
+                </thead>
+                {% for hits in button_hits %}
+                <tbody>
+                <tr>
+                    <th scope="row">{{hits.user}}</th>
+                    <td>{{hits.fat_hits}}</td>
+                    <td>{{hits.dumb_hits}}</td>
+                    <td>{{hits.stupid_hits}}</td>
+                </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+            
+        {% else %}
+            <p>No Contacts Found</p>
+        {% endif %}
+    </div>
+    {% endblock %}
+    </div>
+</body>
+</html>

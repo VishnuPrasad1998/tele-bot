@@ -6,6 +6,8 @@ Features:
 2. Click counts displayed on homepage itself.
 3. Chatbot whick responds to our action.
 
+[Click here](https://postimg.cc/gallery/mHWDWck) to see the screenshots of the webapp.
+
 Setup:
 1. Clone the repo
 ```git clone https://github.com/VishnuPrasad1998/telebot.git```

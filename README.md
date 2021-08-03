@@ -45,5 +45,9 @@ python manage.py createsuperuser
 ```
 python manage.py runserver
 ```
+9. To run tests
+```
+./manage.py test chat/
+```
 You are good to go...
 This is version1 so UI is a mess and features like count update can be made real time.
